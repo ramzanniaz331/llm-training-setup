@@ -4,7 +4,7 @@ This guide will walk you through setting up the training framework on a new AWS 
 and running CPT (Continued Pre-Training), SFT (Supervised Fine-Tuning), and DPO
 (Direct Preference Optimization) training for Gemma models.
 
-PART 1: INSTALLING MINICONDA AND SETTING UP ENVIRONMENT
+## PART 1: INSTALLING MINICONDA AND SETTING UP ENVIRONMENT
 
 1. INSTALLING MINICONDA ON LINUX (AWS EC2 INSTANCE)
    -------------------------------------------------
@@ -47,7 +47,7 @@ PART 1: INSTALLING MINICONDA AND SETTING UP ENVIRONMENT
    and prevents breaking system-wide installations.
 
 
-PART 2: HUGGING FACE SETUP
+## PART 2: HUGGING FACE SETUP
 
 1. INSTALLING HUGGING FACE HUB
    ----------------------------
@@ -72,7 +72,7 @@ PART 2: HUGGING FACE SETUP
       website before you can download them.
 
 
-PART 3: INSTALLING THE TRAINING FRAMEWORK
+## PART 3: INSTALLING THE TRAINING FRAMEWORK
 
 1. CLONING THE TRAINING FRAMEWORK REPOSITORY
    ---------------------------------
@@ -127,7 +127,7 @@ PART 3: INSTALLING THE TRAINING FRAMEWORK
    python -c "import torch, trl, deepspeed, transformers, accelerate; print('torch:', torch.__version__); print('trl:', trl.__version__); print('deepspeed:', deepspeed.__version__); print('transformers:', transformers.__version__); print('accelerate:', accelerate.__version__)"
 
 
-PART 4: S3 ACCESS SETUP FOR DATASETS
+## PART 4: S3 ACCESS SETUP FOR DATASETS
 
 1. INSTALLING S3 ACCESS LIBRARIES
    --------------------------------
@@ -298,7 +298,7 @@ PART 4: S3 ACCESS SETUP FOR DATASETS
    YAML training configuration files.
 
 
-PART 5: TRAINING CONFIGURATION FILES
+## PART 5: TRAINING CONFIGURATION FILES
 
 1. YAML CONFIGURATION FILES LOCATION
    ----------------------------------
@@ -318,15 +318,18 @@ PART 5: TRAINING CONFIGURATION FILES
    into the LlamaFactory YAML directories above before running training.
 
    Example structure:
-   LlamaFactory/
-   └── examples/
-       └── train_full/
-           ├── gemma_cpt.yaml
-           ├── gemma_sft.yaml
-           └── gemma_dpo.yaml
+
+```text
+LlamaFactory/
+└── examples/
+    └── train_full/
+        ├── gemma_cpt.yaml
+        ├── gemma_sft.yaml
+        └── gemma_dpo.yaml
+```
 
 
-PART 6: RUNNING TRAINING WITH THE FRAMEWORK
+## PART 6: RUNNING TRAINING WITH THE FRAMEWORK
 
 1. BASIC TRAINING COMMAND
    -----------------------
