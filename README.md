@@ -1,8 +1,8 @@
-LLAMA FACTORY INSTALLATION AND TRAINING GUIDE
+MODEL TRAINING INSTALLATION AND TRAINING GUIDE
 
-This guide will walk you through setting up LLaMA Factory on a new AWS instance
-and running CPT (Continued Pre-Training) and SFT (Supervised Fine-Tuning) 
-training for both LLaMA and Gemma models.
+This guide will walk you through setting up the training framework on a new AWS instance
+and running CPT (Continued Pre-Training), SFT (Supervised Fine-Tuning), and DPO
+(Direct Preference Optimization) training for Gemma models.
 
 PART 1: INSTALLING MINICONDA AND SETTING UP ENVIRONMENT
 
@@ -39,7 +39,7 @@ PART 1: INSTALLING MINICONDA AND SETTING UP ENVIRONMENT
       python --version
       (Should show Python 3.10.x)
 
-   Note: Always activate this environment before working with LLaMA Factory:
+   Note: Always activate this environment before working with the training framework:
       conda activate nust
 
    IMPORTANT: Using a virtual environment (conda environment) is crucial to avoid
@@ -72,9 +72,9 @@ PART 2: HUGGING FACE SETUP
       website before you can download them.
 
 
-PART 3: INSTALLING LLAMA FACTORY
+PART 3: INSTALLING THE TRAINING FRAMEWORK
 
-1. CLONING LLAMA FACTORY REPOSITORY
+1. CLONING THE TRAINING FRAMEWORK REPOSITORY
    ---------------------------------
 
    Make sure you are in your desired directory and have activated the conda 
@@ -82,13 +82,13 @@ PART 3: INSTALLING LLAMA FACTORY
 
    conda activate nust
 
-   a) Clone the LLaMA Factory repository:
+   a) Clone the training framework repository:
       git clone --depth 1 https://github.com/hiyouga/LlamaFactory.git
 
    b) Navigate to the cloned directory:
       cd LlamaFactory
 
-   c) Install LLaMA Factory in editable mode:
+   c) Install the training framework in editable mode:
       pip install -e .
 
    d) Install metrics dependencies:
@@ -101,7 +101,7 @@ PART 3: INSTALLING LLAMA FACTORY
 2. RESOLVING PACKAGE VERSION CONFLICTS
    ------------------------------------
 
-   IMPORTANT: There can be conflicts between different packages like LLaMA Factory,
+   IMPORTANT: There can be conflicts between different packages in the training stack,
    DeepSpeed, PyTorch, transformers, etc. The following versions have been tested
    and found to work well together to resolve common conflicts:
 
@@ -271,9 +271,30 @@ PART 4: S3 ACCESS SETUP FOR DATASETS
 }
 ```
 
+   DPO Dataset Example (local file):
+
+```json
+{
+  "extracted_dpo_batch_16k_all": {
+    "file_name": "extracted_dpo_batch_16K_ALL.jsonl",
+    "ranking": true,
+    "formatting": "alpaca",
+    "columns": {
+      "prompt": "user_prompt",
+      "chosen": "chosen",
+      "rejected": "rejected"
+    }
+  }
+}
+```
+
+   Note for local datasets: if your dataset file is already downloaded locally,
+   use `file_name` (as shown above), place the file in the framework data
+   directory, and then reference the dataset key in your YAML file.
+
    Note: You can add multiple datasets in the same JSON file. Make sure the
    JSON syntax is valid (proper commas, brackets, etc.). The dataset names
-   (like "cpt_jazz_v3", "ramzan_openhermes") will be referenced in your
+   (like "cpt_jazz_v3", "ramzan_openhermes", "extracted_dpo_batch_16k_all") will be referenced in your
    YAML training configuration files.
 
 
@@ -282,37 +303,40 @@ PART 5: TRAINING CONFIGURATION FILES
 1. YAML CONFIGURATION FILES LOCATION
    ----------------------------------
 
-   Training configuration files (YAML files) for CPT and SFT training should be
-   created in the following directory:
+   Training configuration files (YAML files) for CPT, SFT, and DPO training
+   should be placed in:
 
    LlamaFactory/examples/train_full/ or /train_lora
 
-   This directory contains example YAML files for full model training. You can:
+   This directory contains the runtime YAML files used by the framework. You can:
    - Use existing example files as templates
    - Create new YAML files for your specific training runs
    - Reference datasets configured in dataset_info.json by their dataset name
+
+   Note: In this repository, the `Training files/` directory contains the YAML
+   files we used during training and plan to share. Copy or adapt these files
+   into the LlamaFactory YAML directories above before running training.
 
    Example structure:
    LlamaFactory/
    └── examples/
        └── train_full/
-           ├── llama_cpt.yaml
-           ├── llama_sft.yaml
            ├── gemma_cpt.yaml
-           └── gemma_sft.yaml
+           ├── gemma_sft.yaml
+           └── gemma_dpo.yaml
 
 
-PART 6: RUNNING TRAINING WITH LLAMA FACTORY
+PART 6: RUNNING TRAINING WITH THE FRAMEWORK
 
 1. BASIC TRAINING COMMAND
    -----------------------
 
-   The basic command to run training using LLaMA Factory is:
+   The basic command to run training is:
 
    llamafactory-cli train <path_to_yaml_file>
 
    Example:
-   llamafactory-cli train examples/train_full/llama3_8b_full_sft.yaml
+   llamafactory-cli train examples/train_full/gemma_3_8b_full_sft.yaml
 
 
 2. MULTI-GPU TRAINING (SINGLE NODE)
@@ -320,7 +344,7 @@ PART 6: RUNNING TRAINING WITH LLAMA FACTORY
 
    For multi-GPU training on a single machine, use FORCE_TORCHRUN:
 
-   FORCE_TORCHRUN=1 llamafactory-cli train examples/train_full/llama3_8b_full_sft.yaml
+   FORCE_TORCHRUN=1 llamafactory-cli train examples/train_full/gemma_3_8b_full_sft.yaml
 
    This will automatically use all available GPUs on the machine.
 
@@ -330,22 +354,25 @@ PART 6: RUNNING TRAINING WITH LLAMA FACTORY
 
    To use specific GPUs (e.g., GPU 0 and GPU 1):
 
-   CUDA_VISIBLE_DEVICES=0,1 llamafactory-cli train examples/train_full/llama3_8b_full_sft.yaml
+   CUDA_VISIBLE_DEVICES=0,1 llamafactory-cli train examples/train_full/gemma_3_8b_full_sft.yaml
 
    Or combine with FORCE_TORCHRUN for multi-GPU:
 
-   CUDA_VISIBLE_DEVICES=0,1 FORCE_TORCHRUN=1 llamafactory-cli train examples/train_full/llama3_8b_full_sft.yaml
+   CUDA_VISIBLE_DEVICES=0,1 FORCE_TORCHRUN=1 llamafactory-cli train examples/train_full/gemma_3_8b_full_sft.yaml
 
 
 
-4. EXAMPLES FOR CPT AND SFT TRAINING
-   -----------------------------------
+4. EXAMPLES FOR CPT, SFT, AND DPO TRAINING
+   ----------------------------------------
 
    CPT (Continued Pre-Training) Example:
-   FORCE_TORCHRUN=1 llamafactory-cli train examples/train_full/llama3_8b_full_pretrain.yaml
+   FORCE_TORCHRUN=1 llamafactory-cli train examples/train_full/gemma_3_8b_full_pretrain.yaml
 
    SFT (Supervised Fine-Tuning) Example:
-   FORCE_TORCHRUN=1 llamafactory-cli train examples/train_full/llama3_8b_full_sft.yaml
+   FORCE_TORCHRUN=1 llamafactory-cli train examples/train_full/gemma_3_8b_full_sft.yaml
+
+   DPO (Direct Preference Optimization) Example:
+   FORCE_TORCHRUN=1 llamafactory-cli train examples/train_full/gemma_dpo.yaml
 
 
 5. NOTES

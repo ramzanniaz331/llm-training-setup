@@ -1,0 +1,67 @@
+### model (local apr-26 full model)
+model_name_or_path: usmanxia/gemma-3-12b-local-apr-26
+# Omit ref_model for LoRA DPO: TRL uses the same model with adapters disabled for ref logps (no 2nd full copy on GPU).
+trust_remote_code: true
+low_cpu_mem_usage: true
+
+### method
+stage: dpo
+do_train: true
+finetuning_type: lora
+freeze_vision_tower: true
+freeze_multi_modal_projector: true
+deepspeed: /home/ec2-user/nust/LlamaFactory/examples/deepspeed/ds_z2_config.json
+
+lora_target: all
+lora_rank: 16
+lora_alpha: 32
+lora_dropout: 0.05
+use_rslora: true
+
+pref_beta: 0.05
+pref_loss: sigmoid
+
+### dataset
+dataset: extracted_dpo_batch_16k_all
+dataset_dir: /home/ec2-user/nust/LlamaFactory/data
+template: gemma3
+cutoff_len: 4096
+shuffle_dataset: true
+overwrite_cache: true
+preprocessing_num_workers: 4
+dataloader_num_workers: 4
+
+### output
+output_dir: saves/dpo/gemma3_12b_local_apr26_lora_dpo
+load_best_model_at_end: true
+logging_steps: 5
+save_steps: 250
+save_total_limit: 3
+plot_loss: true
+overwrite_output_dir: true
+save_only_model: false
+report_to: wandb
+
+### train
+per_device_train_batch_size: 1
+gradient_accumulation_steps: 16
+learning_rate: 5.0e-6
+num_train_epochs: 1
+lr_scheduler_type: cosine
+warmup_ratio: 0.10
+bf16: true
+ddp_timeout: 180000000
+resume_from_checkpoint: null
+ddp_find_unused_parameters: false
+gradient_checkpointing: true
+gradient_checkpointing_kwargs:
+  use_reentrant: false
+use_fast_tokenizer: true
+flash_attn: fa2
+packing: false
+
+### eval
+val_size: 0.05
+per_device_eval_batch_size: 1
+eval_strategy: steps
+eval_steps: 250

@@ -1,0 +1,51 @@
+### model
+model_name_or_path: ramzanniaz331/gemma-3-12b-pt
+trust_remote_code: true
+
+### method
+stage: sft
+do_train: true
+finetuning_type: full
+deepspeed: /home/ec2-user/nust/LlamaFactory/examples/deepspeed/ds_z2_config.json  # choices: [ds_z0_config.json, ds_z2_config.json, ds_z3_config.json, ds_z3_offload_config.json]
+
+### dataset
+dataset: sft_phase2_merged_shuffled_final_data
+dataset_dir: /home/ec2-user/nust/LlamaFactory/data
+template: gemma3
+cutoff_len: 4096
+# max_samples: 1000
+overwrite_cache: true
+preprocessing_num_workers: 8
+dataloader_num_workers: 4
+
+### output
+# output_dir: saves/gemma3-12b/full/sft
+output_dir: sft_output/saves/train_sft/gemma3_12b_full_sft_ramzan
+logging_steps: 5
+save_steps: 200
+save_total_limit: 2
+plot_loss: true
+overwrite_output_dir: true
+save_only_model: false
+report_to: wandb  # choices: [none, wandb, tensorboard, swanlab, mlflow]
+
+### train
+per_device_train_batch_size: 1
+gradient_accumulation_steps: 8
+learning_rate: 5.0e-6
+num_train_epochs: 1.0
+lr_scheduler_type: cosine
+warmup_ratio: 0.03
+bf16: true
+pure_bf16: true  # Keep params in bf16 to avoid OOM (skips float32 upcasting)
+ddp_timeout: 180000000
+gradient_checkpointing: true
+flash_attn: fa2
+# resume_from_checkpoint: LLaMA_3b_Full_Train_SFT_Checkpoints/checkpoint-5
+
+## eval
+val_size: 0.01
+per_device_eval_batch_size: 1
+eval_strategy: steps
+eval_steps: 500
+

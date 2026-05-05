@@ -1,0 +1,58 @@
+### Second epoch: resume from phase2 run (Dr Usman: one more epoch, save separately, new HF repo)
+### Base run: sft_output/saves/train_sft/gemma3_12b_full_sft_ramzan/checkpoint-1765
+
+### model — local first-run folder (config + tokenizer; no HF download). Weights + optimizer still restored from resume_from_checkpoint.
+model_name_or_path: /home/ec2-user/nust/LlamaFactory/sft_output/saves/train_sft/gemma3_12b_full_sft_ramzan
+trust_remote_code: true
+
+### method
+stage: sft
+do_train: true
+finetuning_type: full
+deepspeed: /home/ec2-user/nust/LlamaFactory/examples/deepspeed/ds_z2_config.json
+
+### dataset
+dataset: sft_phase2_merged_shuffled_final_data
+dataset_dir: /home/ec2-user/nust/LlamaFactory/data
+template: gemma3
+cutoff_len: 4096
+overwrite_cache: false
+shuffle_dataset: true
+preprocessing_num_workers: 16
+dataloader_num_workers: 8
+
+### output (new folder — does not overwrite first run)
+output_dir: sft_output/saves/train_sft/gemma3_12b_full_sft_ramzan_epoch2
+logging_steps: 5
+save_steps: 200
+save_total_limit: 2
+plot_loss: true
+overwrite_output_dir: true
+save_only_model: false
+report_to: wandb
+
+### train
+# Total epochs = 2 → after resume from end of epoch 1, Trainer runs exactly one more epoch
+num_train_epochs: 2.0
+resume_from_checkpoint: sft_output/saves/train_sft/gemma3_12b_full_sft_ramzan/checkpoint-1765
+# LR: resume restores scheduler state — LR continues from end of epoch 1 (not a fresh 5e-6 warmup).
+# Keep lr settings aligned with epoch-1 yaml. Avoid “merged weights only, no resume” + 5e-6 (restarts schedule).
+# Different data order vs epoch 1 (shuffle_dataset uses this if set)
+data_seed: 43
+train_sampling_strategy: random
+per_device_train_batch_size: 1
+gradient_accumulation_steps: 8
+learning_rate: 5.0e-6
+lr_scheduler_type: cosine
+warmup_ratio: 0.03
+bf16: true
+pure_bf16: true
+ddp_timeout: 180000000
+gradient_checkpointing: true
+flash_attn: fa2
+
+### eval
+val_size: 0.01
+per_device_eval_batch_size: 1
+eval_strategy: steps
+eval_steps: 500
