@@ -1,4 +1,4 @@
-#MODEL TRAINING INSTALLATION AND TRAINING GUIDE
+# MODEL TRAINING INSTALLATION AND TRAINING GUIDE
 
 This guide will walk you through setting up the training framework on a new AWS instance
 and running CPT (Continued Pre-Training), SFT (Supervised Fine-Tuning), and DPO
