@@ -1,14 +1,10 @@
-================================================================================
 LLAMA FACTORY INSTALLATION AND TRAINING GUIDE
-================================================================================
 
 This guide will walk you through setting up LLaMA Factory on a new AWS instance
 and running CPT (Continued Pre-Training) and SFT (Supervised Fine-Tuning) 
 training for both LLaMA and Gemma models.
 
-================================================================================
 PART 1: INSTALLING MINICONDA AND SETTING UP ENVIRONMENT
-================================================================================
 
 1. INSTALLING MINICONDA ON LINUX (AWS EC2 INSTANCE)
    -------------------------------------------------
@@ -51,9 +47,7 @@ PART 1: INSTALLING MINICONDA AND SETTING UP ENVIRONMENT
    and prevents breaking system-wide installations.
 
 
-================================================================================
 PART 2: HUGGING FACE SETUP
-================================================================================
 
 1. INSTALLING HUGGING FACE HUB
    ----------------------------
@@ -78,9 +72,7 @@ PART 2: HUGGING FACE SETUP
       website before you can download them.
 
 
-================================================================================
 PART 3: INSTALLING LLAMA FACTORY
-================================================================================
 
 1. CLONING LLAMA FACTORY REPOSITORY
    ---------------------------------
@@ -135,9 +127,7 @@ PART 3: INSTALLING LLAMA FACTORY
    python -c "import torch, trl, deepspeed, transformers, accelerate; print('torch:', torch.__version__); print('trl:', trl.__version__); print('deepspeed:', deepspeed.__version__); print('transformers:', transformers.__version__); print('accelerate:', accelerate.__version__)"
 
 
-================================================================================
 PART 4: S3 ACCESS SETUP FOR DATASETS
-================================================================================
 
 1. INSTALLING S3 ACCESS LIBRARIES
    --------------------------------
@@ -166,106 +156,120 @@ PART 4: S3 ACCESS SETUP FOR DATASETS
    Format for S3 datasets:
 
    For CPT (Continued Pre-Training) datasets:
-   {
-     "dataset_name": {
-       "cloud_file_name": "s3://bucket-name/path/to/dataset.jsonl",
-       "columns": {
-         "prompt": "text"
-       }
-     }
-   }
+
+```json
+{
+  "dataset_name": {
+    "cloud_file_name": "s3://bucket-name/path/to/dataset.jsonl",
+    "columns": {
+      "prompt": "text"
+    }
+  }
+}
+```
 
    For SFT (Supervised Fine-Tuning) datasets:
-   {
-     "dataset_name": {
-       "cloud_file_name": "s3://bucket-name/path/to/dataset.jsonl",
-       "formatting": "sharegpt",
-       "columns": {
-         "messages": "conversations"
-       }
-     }
-   }
+
+```json
+{
+  "dataset_name": {
+    "cloud_file_name": "s3://bucket-name/path/to/dataset.jsonl",
+    "formatting": "sharegpt",
+    "columns": {
+      "messages": "conversations"
+    }
+  }
+}
+```
 
    REAL EXAMPLES FROM MY DATASET_INFO.JSON:
 
    CPT Dataset Examples:
-   ---------------------
-   "cpt_jazz_pretrain": {
-     "cloud_file_name": "s3://local-llm-data-1/NUST/CPT_Final_Data/merged_final_dataset.jsonl",
-     "columns": {
-       "prompt": "text"
-     }
-   },
-   "cpt_jazz_v3": {
-     "cloud_file_name": "s3://local-llm-data-1/NUST/CPT_Final_Data/v3_Jazz_Data_merged_dataset.jsonl",
-     "columns": {
-       "prompt": "text"
-     }
-   },
-   "cpt_local_v3": {
-     "cloud_file_name": "s3://local-llm-data-1/NUST/CPT_Final_Data/v3_Local_merged_dataset.jsonl",
-     "columns": {
-       "prompt": "text"
-     }
-   },
-   "cpt_opensource_v3": {
-     "cloud_file_name": "s3://local-llm-data-1/NUST/CPT_Final_Data/v3_Open_Source_merged_dataset.jsonl",
-     "columns": {
-       "prompt": "text"
-     }
-   }
+
+```json
+{
+  "cpt_jazz_pretrain": {
+    "cloud_file_name": "s3://local-llm-data-1/NUST/CPT_Final_Data/merged_final_dataset.jsonl",
+    "columns": {
+      "prompt": "text"
+    }
+  },
+  "cpt_jazz_v3": {
+    "cloud_file_name": "s3://local-llm-data-1/NUST/CPT_Final_Data/v3_Jazz_Data_merged_dataset.jsonl",
+    "columns": {
+      "prompt": "text"
+    }
+  },
+  "cpt_local_v3": {
+    "cloud_file_name": "s3://local-llm-data-1/NUST/CPT_Final_Data/v3_Local_merged_dataset.jsonl",
+    "columns": {
+      "prompt": "text"
+    }
+  },
+  "cpt_opensource_v3": {
+    "cloud_file_name": "s3://local-llm-data-1/NUST/CPT_Final_Data/v3_Open_Source_merged_dataset.jsonl",
+    "columns": {
+      "prompt": "text"
+    }
+  }
+}
+```
 
    SFT Dataset Examples:
-   ---------------------
-   "sft_sharegpt": {
-     "cloud_file_name": "s3://local-llm-data-1/NUST/SFT_Final_Dataset/combined_conversations_100k.jsonl",
-     "formatting": "sharegpt",
-     "columns": {
-       "messages": "conversations"
-     }
-   },
-   "ramzan_short_question_answer": {
-     "cloud_file_name": "s3://local-llm-data-1/NUST/sharegpt_processed_data_by_ramzan/ShortQuestionAnswer_sharegpt_final.jsonl",
-     "formatting": "sharegpt",
-     "columns": {
-       "messages": "conversations"
-     }
-   },
-   "ramzan_roman_urdu": {
-     "cloud_file_name": "s3://local-llm-data-1/NUST/sharegpt_processed_data_by_ramzan/RomanUrdu10kWithInstruction_sharegpt_final.jsonl",
-     "formatting": "sharegpt",
-     "columns": {
-       "messages": "conversations"
-     }
-   },
-   "ramzan_32k_sharegpt": {
-     "cloud_file_name": "s3://local-llm-data-1/NUST/sharegpt_processed_data_by_ramzan/32k_sharegpt_final.jsonl",
-     "formatting": "sharegpt",
-     "columns": {
-       "messages": "conversations"
-     }
-   },
-   "ramzan_openhermes": {
-     "cloud_file_name": "s3://local-llm-data-1/NUST/sharegpt_processed_data_by_ramzan/openhermes_6k_raw_sharegpt_final.jsonl",
-     "formatting": "sharegpt",
-     "columns": {
-       "messages": "conversations"
-     }
-   },
-   "ramzan_metamath": {
-     "cloud_file_name": "s3://local-llm-data-1/NUST/sharegpt_processed_data_by_ramzan/metamath_4k_raw_sharegpt_final.jsonl",
-     "formatting": "sharegpt",
-     "columns": {
-       "messages": "conversations"
-     }
-   },
-   "ramzan_aya_urdu": {
-     "cloud_file_name": "s3://local-llm-data-1/NUST/sharegpt_processed_data_by_ramzan/aya_urdu_2k_raw_sharegpt_final.jsonl",
-     "formatting": "sharegpt",
-     "columns": {
-       "messages": "conversations"
-     }
-   }
+
+```json
+{
+  "sft_sharegpt": {
+    "cloud_file_name": "s3://local-llm-data-1/NUST/SFT_Final_Dataset/combined_conversations_100k.jsonl",
+    "formatting": "sharegpt",
+    "columns": {
+      "messages": "conversations"
+    }
+  },
+  "ramzan_short_question_answer": {
+    "cloud_file_name": "s3://local-llm-data-1/NUST/sharegpt_processed_data_by_ramzan/ShortQuestionAnswer_sharegpt_final.jsonl",
+    "formatting": "sharegpt",
+    "columns": {
+      "messages": "conversations"
+    }
+  },
+  "ramzan_roman_urdu": {
+    "cloud_file_name": "s3://local-llm-data-1/NUST/sharegpt_processed_data_by_ramzan/RomanUrdu10kWithInstruction_sharegpt_final.jsonl",
+    "formatting": "sharegpt",
+    "columns": {
+      "messages": "conversations"
+    }
+  },
+  "ramzan_32k_sharegpt": {
+    "cloud_file_name": "s3://local-llm-data-1/NUST/sharegpt_processed_data_by_ramzan/32k_sharegpt_final.jsonl",
+    "formatting": "sharegpt",
+    "columns": {
+      "messages": "conversations"
+    }
+  },
+  "ramzan_openhermes": {
+    "cloud_file_name": "s3://local-llm-data-1/NUST/sharegpt_processed_data_by_ramzan/openhermes_6k_raw_sharegpt_final.jsonl",
+    "formatting": "sharegpt",
+    "columns": {
+      "messages": "conversations"
+    }
+  },
+  "ramzan_metamath": {
+    "cloud_file_name": "s3://local-llm-data-1/NUST/sharegpt_processed_data_by_ramzan/metamath_4k_raw_sharegpt_final.jsonl",
+    "formatting": "sharegpt",
+    "columns": {
+      "messages": "conversations"
+    }
+  },
+  "ramzan_aya_urdu": {
+    "cloud_file_name": "s3://local-llm-data-1/NUST/sharegpt_processed_data_by_ramzan/aya_urdu_2k_raw_sharegpt_final.jsonl",
+    "formatting": "sharegpt",
+    "columns": {
+      "messages": "conversations"
+    }
+  }
+}
+```
 
    Note: You can add multiple datasets in the same JSON file. Make sure the
    JSON syntax is valid (proper commas, brackets, etc.). The dataset names
@@ -273,9 +277,7 @@ PART 4: S3 ACCESS SETUP FOR DATASETS
    YAML training configuration files.
 
 
-================================================================================
 PART 5: TRAINING CONFIGURATION FILES
-================================================================================
 
 1. YAML CONFIGURATION FILES LOCATION
    ----------------------------------
@@ -300,9 +302,7 @@ PART 5: TRAINING CONFIGURATION FILES
            └── gemma_sft.yaml
 
 
-================================================================================
 PART 6: RUNNING TRAINING WITH LLAMA FACTORY
-================================================================================
 
 1. BASIC TRAINING COMMAND
    -----------------------
